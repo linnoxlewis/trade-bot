@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option go_package = "/grpc/pb/trade-bot;pb";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+package TradeBot;
+
+service PaySystemService {
+  rpc Ping(google.protobuf.Empty) returns (google.protobuf.Empty);
+}

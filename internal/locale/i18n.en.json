@@ -1,0 +1,13 @@
+{
+  "helloMessage": {
+    "description" : "hello message",
+    "one": "Welcome to the club, buddy! \n\n Send me command /help if you need command list",
+    "other": "Welcome to the club, buddy! \n\n Send me command /help if you need command list"
+  },
+
+  "willExpiredLicenseDescription": {
+    "description":"Description license will expired" ,
+    "one": "Your license expires on {{.Date}} .After that, your license will be reset, all open positions, API keys will be deleted. You can renew your license in the terminal settings.",
+    "other": "Your license expires on {{.Date}} .After that, your license will be reset, all open positions, API keys will be deleted. You can renew your license in the terminal settings."
+  }
+}
