@@ -5,9 +5,80 @@
     "other": "Welcome to the club, buddy! \n\n Отправь команду /help чтобы посмотреть что я могу"
   },
 
-  "willExpiredLicenseDescription": {
-    "description": "Description license will expired",
-    "one": "Your license expires on {{.Date}} .After that, your license will be reset, all open positions, API keys will be deleted. You can renew your license in the terminal settings.",
-    "other": "Your license expires on {{.Date}} .After that, your license will be reset, all open positions, API keys will be deleted. You can renew your license in the terminal settings."
+  "userAlreadyExist": {
+    "description": "User already exist",
+    "one": "Вы уже есть в системе",
+    "other": "Вы уже есть в системе"
+  },
+
+  "userNotFound": {
+    "description": "User not found",
+    "one": "Пользователь не найден",
+    "other": "Пользователь не найден"
+  },
+
+
+  "orderNotFound": {
+    "description": "order not found",
+    "one": "Данного ордера не существует",
+    "other": "Данного ордера не существует"
+  },
+
+  "apiKeysNotFound ": {
+    "description": "api keys not found",
+    "one": "Ключи биржи не найдены",
+    "other": "Ключи биржи не найдены"
+  },
+
+  "invalidFormat": {
+    "description": "invalid data format",
+    "one": "Данные не корректны",
+    "other": "Данные не корректны"
+  },
+
+  "orderCreated": {
+    "description": "Order was created",
+    "one": "Ордер был успешно создан!\nID на бирже: {{.ExecOrderId}}\nВнутренний ID: {{.Id}}\nТип: {{.Side}}\nБиржа: {{.Exchange}}\nПара: {{.Symbol}}\nЦена: {{.Price}}\nКоличество: {{.Quantity}}\n",
+    "other": "Ордер был успешно создан!\nID на бирже: {{.ExecOrderId}}\nВнутренний ID: {{.Id}}\nТип: {{.Side}}\nБиржа: {{.Exchange}}\nПара: {{.Symbol}}\nЦена: {{.Price}}\nКоличество: {{.Quantity}}\n"
+  },
+
+  "orderNotCreated": {
+    "description": "Order was not created",
+    "one": "Не удалось создать ордер на бирже:( \n",
+    "other": "Не удалось создать ордер на бирже:( \n"
+  },
+
+  "successExecuted": {
+    "description": "TpSl Order was executed",
+    "one": "Ордер {{.TpSl}} был успешно исполнен! \uD83E\uDD73 \nID:{{.ExecOrderId}}\nВнутренний ID: {{.Id}}\nТип: {{.Side}}\nБиржа: {{.Exchange}}\nПара: {{.Symbol}}\nЦена: {{.Price}}\nКоличество: {{.Quantity}}\n",
+    "other": "Ордер {{.TpSl}} был успешно исполнен! \uD83E\uDD73 \nID:{{.ExecOrderId}}\nВнутренний ID: {{.Id}}\nТип: {{.Side}}\nБиржа: {{.Exchange}}\nПара: {{.Symbol}}\nЦена: {{.Price}}\nКоличество: {{.Quantity}}\n"
+  },
+
+  "executeFailed": {
+    "description": "invalid order execute",
+    "one": "Не удалось исполнить ордер {{.Tpsl}} на {{.Side}} с ценой {{.Price}}",
+    "other": "Не удалось исполнить ордер {{.Tpsl}} на {{.Side}} с ценой {{.Price}}"
+  },
+
+  "yourOrders": {
+    "description": "your orders",
+    "one": "Ваши открытые ордера:",
+    "other": "Ваши открытые ордера:"
+  },
+
+  "chooseExchange": {
+    "description": "choose exchange",
+    "one": "Выберите биржу:",
+    "other": "Выберите биржу:"
+  },
+
+  "yourBalance": {
+    "description": "your balance",
+    "one": "Ваш баланс:",
+    "other": "Ваш баланс:"
   }
 }
+
+
+
+

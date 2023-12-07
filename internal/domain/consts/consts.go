@@ -17,4 +17,23 @@ const (
 	ErrNotFound       = "not_found"
 	ErrWrongInputJson = "wrong_json_format_or_params_type"
 	ErrConversion     = "conversion_err"
+
+	TradePriceCacheKey = "pairPrice_"
+	Binance            = "binance"
+	Kucoin             = "kucoin"
+	Okx                = "okx"
+
+	OrderStatusActive       = "active"
+	OrderStatusPartFilled   = "part_filled"
+	OrderStatusCanceled     = "canceled"
+	OrderStatusFilled       = "filled"
+	OrderStatusTpSlInactive = "inactive"
+
+	TpOrderType   = "tp"
+	SlOrderType   = "sl"
+	BaseOrderType = "base"
+
+	TgCreateOrderCommand = "create"
+	TgCancelOrderCommand = "cancel"
+	TgUpdateTpSLCommand  = "updateTpsl"
 )

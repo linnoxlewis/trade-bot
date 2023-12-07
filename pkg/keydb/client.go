@@ -3,7 +3,7 @@ package keydb
 import (
 	"context"
 	"github.com/go-redis/redis/v8"
-	"tct_backend/auth/pkg/log"
+	"github.com/linnoxlewis/trade-bot/pkg/log"
 )
 
 var conn *redis.Client

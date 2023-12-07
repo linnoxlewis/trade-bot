@@ -4,11 +4,15 @@ import (
 	"context"
 	"errors"
 	telegramCli "github.com/linnoxlewis/trade-bot/pkg/telegram"
+	"time"
 )
 
 type Meta struct {
-	ChatID   int
-	Username string
+	ChatID    int
+	MessageId int
+	Username  string
+	Lang      string
+	Date      int
 }
 
 type Fetcher struct {
@@ -52,13 +56,31 @@ func (f *Fetcher) event(upd telegramCli.Update) Event {
 	}
 
 	if updType == Message {
-		res.Meta = Meta{
-			ChatID:   upd.Message.Chat.ID,
-			Username: upd.Message.From.Username,
+		meta := Meta{
+			ChatID:    upd.Message.Chat.ID,
+			Username:  upd.Message.From.Username,
+			Lang:      upd.Message.From.Language,
+			MessageId: upd.Message.MessageID,
+			Date:      upd.Message.Date,
 		}
+		if err := f.CheckTime(meta); err != nil {
+			return Event{}
+		}
+
+		res.Meta = meta
 	}
 
 	return res
+}
+
+func (f *Fetcher) CheckTime(meta Meta) error {
+	timestamp := time.Unix(int64(meta.Date), 0)
+	maxMessageAge := time.Second * 10
+	if time.Since(timestamp) > maxMessageAge {
+		return errors.New("not actual")
+	} else {
+		return nil
+	}
 }
 
 func (f *Fetcher) fetchText(upd telegramCli.Update) string {

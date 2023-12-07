@@ -7,6 +7,7 @@ import (
 
 type UpdateOrder struct {
 	OrderId     int64   `json:"orderId"`
+	Exchange    string  `json:"exchange"`
 	Symbol      string  `json:"symbol"`
 	Side        string  `json:"side"`
 	OrderType   string  `json:"orderType"`

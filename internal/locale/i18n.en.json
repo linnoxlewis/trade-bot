@@ -4,10 +4,76 @@
     "one": "Welcome to the club, buddy! \n\n Send me command /help if you need command list",
     "other": "Welcome to the club, buddy! \n\n Send me command /help if you need command list"
   },
+  "userAlreadyExist": {
+    "description": "User already exist",
+    "one": "User already exist",
+    "other": "User already exist"
+  },
 
-  "willExpiredLicenseDescription": {
-    "description":"Description license will expired" ,
-    "one": "Your license expires on {{.Date}} .After that, your license will be reset, all open positions, API keys will be deleted. You can renew your license in the terminal settings.",
-    "other": "Your license expires on {{.Date}} .After that, your license will be reset, all open positions, API keys will be deleted. You can renew your license in the terminal settings."
+  "userNotFound": {
+    "description": "User not found",
+    "one": "User not found",
+    "other": "User not found"
+  },
+
+
+  "orderNotFound": {
+    "description": "Order not found",
+    "one": "This order not found",
+    "other": "This order not found"
+  },
+
+  "apiKeysNotFound ": {
+    "description": "api keys not found",
+    "one": "Api keys not found",
+    "other": "Api keys not found"
+  },
+
+  "invalidFormat": {
+    "description": "invalid data format",
+    "one": "Invalid data format",
+    "other": "Invalid data format"
+  },
+
+  "orderCreated": {
+    "description": "Order was created",
+    "one": "Order was created!\nID in exchange: {{.ExecOrderId}}\n Inner ID: {{.Id}}\nType: {{.Side}}\nExchange: {{.Exchange}}\nSymbol: {{.Symbol}}\nPrice: {{.Price}}\nQuantity: {{.Quantity}}\n",
+    "other": "Order was created!\nID in exchange: {{.ExecOrderId}}\n Inner ID: {{.Id}}\nType: {{.Side}}\nExchange: {{.Exchange}}\nSymbol: {{.Symbol}}\nPrice: {{.Price}}\nQuantity: {{.Quantity}}\n"
+  },
+
+  "orderNotCreated": {
+    "description": "Order was not created",
+    "one": "Order was not created:( \n",
+    "other": "Order was not created:( \n"
+  },
+
+  "successExecuted": {
+    "description": "TpSl Order was executed",
+    "one": "Order {{.TpSl}} was executed! \uD83E\uDD73 \nID:{{.ExecOrderId}}\nInner ID: {{.Id}}\nType: {{.Side}}\nExchange: {{.Exchange}}\nSymbol: {{.Symbol}}\nPrice: {{.Price}}\nQauntity: {{.Quantity}}\n",
+    "other": "Order {{.TpSl}} was executed! \uD83E\uDD73 \nID:{{.ExecOrderId}}\nInner ID: {{.Id}}\nType: {{.Side}}\nExchange: {{.Exchange}}\nSymbol: {{.Symbol}}\nPrice: {{.Price}}\nQauntity: {{.Quantity}}\n"
+  },
+
+  "executeFailed": {
+    "description": "invalid order execute",
+    "one": "Can`t execute order {{.Tpsl}} at {{.Side}} with price {{.Price}}",
+    "other": "Can`t execute order {{.Tpsl}} at {{.Side}} with price {{.Price}}"
+  },
+
+  "yourOrders": {
+    "description": "your orders",
+    "one": "Your open orders:",
+    "other": "Your open orders:"
+  },
+
+  "chooseExchange": {
+    "description": "Choose exchange",
+    "one": "Choose exchange:",
+    "other": "Choose exchange:"
+  },
+
+  "yourBalance": {
+    "description": "Your balance",
+    "one": "Your balance:",
+    "other": "Your balance:"
   }
 }

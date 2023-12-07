@@ -1,12 +1,11 @@
 package domain
 
 import (
-	"github.com/google/uuid"
 	"github.com/linnoxlewis/trade-bot/internal/helper"
 )
 
 type ApiKeys struct {
-	UserId     uuid.UUID
+	UserId     int64
 	PubKey     string
 	PrivKey    string
 	Passphrase string
@@ -14,7 +13,7 @@ type ApiKeys struct {
 	Date
 }
 
-func NewApiKeys(userId uuid.UUID,
+func NewApiKeys(userId int64,
 	exchange,
 	pubKey,
 	privKey,
@@ -33,7 +32,9 @@ func (a *ApiKeys) EmptyPassPhrase() bool {
 }
 
 func (a *ApiKeys) DecodePrivKey(secret string) {
-	a.PrivKey, _ = helper.DecryptMessage(a.PrivKey, secret)
+	as, _ := helper.DecryptMessage(a.PrivKey, secret)
+
+	a.PrivKey = as
 }
 
 func (a *ApiKeys) DecodePassKey(secret string) {

@@ -5,7 +5,6 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/linnoxlewis/trade-bot/internal/domain/consts"
 	"regexp"
-	"strings"
 )
 
 var symbolRegexp = regexp.MustCompile("^[A-Z0-9]{1,20}$")
@@ -23,44 +22,23 @@ var timeInForce = []interface{}{
 }
 
 type Order struct {
-	Command   string  `json:"command"`
-	Exchange  string  `json:"exchange"`
-	Symbol    string  `json:"ccy"`
-	OrderType string  `json:"type"`
-	Side      string  `json:"side"`
-	Quantity  string  `json:"qty"`
-	Price     string  `json:"price"`
-	Tp        float32 `json:"tp"`
-	Sl        float32 `json:"sl"`
-	Ts        float32 `json:"ts"`
-
+	Exchange    string `json:"exchange"`
+	Symbol      string `json:"ccy"`
+	OrderType   string `json:"type"`
+	Side        string `json:"side"`
+	Quantity    string `json:"qty"`
+	Price       string `json:"price"`
+	TpPercent   string `json:"tp_percent"`
+	SlPercent   string `json:"sl_percent"`
+	TpPrice     string `json:"tp_price"`
+	SlPrice     string `json:"sl_price"`
+	TpType      string `json:"tp_type"`
+	SlType      string `json:"sl_type"`
+	Ts          string `json:"ts"`
 	TimeInForce string `json:"tif"`
 	StopPercent string `json:"stopPercent"`
 	StopPrice   string `json:"stopPrice"`
 	IcebergQty  string `json:"icebergQty"`
-}
-
-func NewOrder(
-	command string,
-	exchange string,
-	symbol string,
-	side string,
-	orderType string,
-	quantity string,
-	price string,
-	tp, sl float32,
-) *Order {
-	return &Order{
-		Command:   command,
-		Exchange:  exchange,
-		Symbol:    strings.ToUpper(symbol),
-		Side:      side,
-		OrderType: orderType,
-		Quantity:  quantity,
-		Price:     price,
-		Tp:        tp,
-		Sl:        sl,
-	}
 }
 
 func (o *Order) Validate() error {
@@ -97,6 +75,38 @@ func (o *Order) Validate() error {
 				validation.By(zeroString),
 			),
 		),
+		validation.Field(&o.TpPercent,
+			validation.When(o.TpPrice == "",
+				validation.Required,
+				validation.Match(intRegexp),
+				validation.By(zeroString),
+			),
+		),
+		validation.Field(&o.SlPercent,
+			validation.When(o.SlPrice == "",
+				validation.Required,
+				validation.Match(intRegexp),
+				validation.By(zeroString),
+			),
+		),
+		validation.Field(&o.TpPrice,
+			validation.When(o.TpPercent == "",
+				validation.Required,
+				validation.Match(intRegexp),
+				validation.By(zeroString),
+			),
+		),
+		validation.Field(&o.SlPrice,
+			validation.When(o.SlPercent == "",
+				validation.Required,
+				validation.Match(intRegexp),
+				validation.By(zeroString),
+			),
+		),
+		validation.Field(&o.Ts,
+			validation.Match(intRegexp),
+			validation.By(zeroString),
+		),
 	)
 }
 
@@ -112,4 +122,11 @@ func zeroString(value interface{}) error {
 	}
 
 	return nil
+}
+
+func (o *Order) IsEmptyTpSl() bool {
+	return o.TpPercent == "" &&
+		o.SlPercent == "" &&
+		o.TpPrice == "" &&
+		o.SlPrice == ""
 }

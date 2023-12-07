@@ -7,20 +7,11 @@ import (
 )
 
 type TradeBotServer struct {
-	//orderSrv service.
 	pb.UnimplementedPaySystemServiceServer
 }
 
-func (t TradeBotServer) mustEmbedUnimplementedPaySystemServiceServer() {
-	//TODO implement me
-	panic("implement me")
-}
-
 func NewTradeBotServer() *TradeBotServer {
-	//func NewPaySystemServiceServer(orderSrv service.OrderInterface) *PaySystemServiceServer {
-	return &TradeBotServer{
-		//	orderSrv: orderSrv,
-	}
+	return &TradeBotServer{}
 }
 
 func (t TradeBotServer) Ping(ctx context.Context, _ *emptypb.Empty) (*emptypb.Empty, error) {

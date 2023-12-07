@@ -12,7 +12,8 @@ import (
 const path = "schema"
 
 var mgrCmd = &cobra.Command{
-	Use: "migration",
+	Use:   "migration",
+	Short: "Run db migration",
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg := config.NewConfig()
 		logger := log.NewLogger()

@@ -11,9 +11,9 @@ func RegisterApiKeyRoutes(
 	orderSrv v1.ApiKeyService,
 	logger *log.Logger,
 ) {
-	group := engine.Group("api/v1")
+	group := engine.Group("api/v1/api-key")
 	orderCtrl := v1.NewApiKeyController(orderSrv, logger)
 
-	group.POST("/add", orderCtrl.AddApiKey)
-	group.DELETE("/remove}", orderCtrl.RemoveApiKey)
+	group.POST("/", orderCtrl.AddApiKey)
+	group.DELETE("/{exchange}}", orderCtrl.RemoveApiKey)
 }

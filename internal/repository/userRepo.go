@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"github.com/google/uuid"
 	"github.com/linnoxlewis/trade-bot/internal/domain"
 	"time"
 )
@@ -19,22 +18,57 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 	}
 }
 
-func (u *UserRepository) GetUserById(ctx context.Context, id uuid.UUID) (user *domain.User, err error) {
-	query := `SELECT id,tg_id FROM users WHERE id = $1`
-	if err = u.db.QueryRow(query, id).Scan(); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
-		}
+func (u *UserRepository) CreateUser(ctx context.Context, user *domain.User) (err error) {
+	query := `INSERT INTO users (id, username, created_at) VALUES ($1, $2, $3)`
+	_, err = u.db.ExecContext(ctx,
+		query,
+		user.ID, user.Username, time.Now())
+
+	return
+}
+
+func (u *UserRepository) ExistUser(ctx context.Context, id int64) (exist bool) {
+	query := `SELECT EXISTS( SELECT 1 FROM users where id = $1)`
+	if err := u.db.QueryRowContext(ctx, query, id).Scan(&exist); err != nil {
+		return false
 	}
 
 	return
 }
 
-func (u *UserRepository) CreateUser(ctx context.Context, user *domain.User) (err error) {
-	query := `INSERT INTO users (id,tg_id, tg_username, created_at) VALUES ($1, $2, $3,$4)`
-	_, err = u.db.ExecContext(ctx,
-		query,
-		user.Id.String(), user.TgId, user.Username, time.Now())
+func (u *UserRepository) IsAdmin(ctx context.Context, id int64) (bool, error) {
+	var exist bool
+	query := `SELECT EXISTS( SELECT 1 FROM users where id = $1 AND is_admin = $2)`
+	if err := u.db.QueryRowContext(ctx, query, id, true).Scan(&exist); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, nil
+		}
 
-	return
+		return false, err
+	}
+
+	return exist, nil
+}
+
+func (u *UserRepository) GetAdminIds(ctx context.Context) ([]int, error) {
+	query := `SELECT id FROM users WHERE is_admin = $1`
+	rows, err := u.db.QueryContext(ctx, query, true)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	defer rows.Close()
+
+	ids := make([]int, 0)
+	for rows.Next() {
+		var id int
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+
+	return ids, rows.Err()
 }
