@@ -24,15 +24,12 @@ import (
 	"time"
 )
 
-var localePath = "internal/locale/i18n"
-
 func Run(ctx context.Context) {
 	sgn := make(chan os.Signal, 1)
 	cfg := config.NewConfig()
 	logger := log.NewLogger()
 
-	langs := helper.GetLanguageList()
-	i18n := i18n2.NewI18n(localePath, langs)
+	i18n := i18n2.NewI18n(consts.LocaleDataPath, helper.GetLanguageList())
 
 	keyDb := keydb.NewConnection(
 		cfg.GetGlobalCacheAddress(),
@@ -54,7 +51,7 @@ func Run(ctx context.Context) {
 	orderRepo := repository.NewOrderRepository(database)
 	symbolsRepo := repository.NewSymbolRepository(database)
 
-	userSrv := service.NewUserService(cfg, userRepo, i18n, *logger)
+	userSrv := service.NewUserService(cfg, userRepo, i18n, logger)
 	apiKeySrv := service.NewApiKeysService(cfg, apiKeysRepo, userRepo, i18n, logger)
 	orderSrv := service.NewOrder(cfg, exchangePkg, apiKeysRepo, orderRepo, binanceQueue, limitBinanceQueue, keyDb, i18n, logger)
 	symbolSrv := service.NewSymbolService(orderRepo, symbolsRepo, logger)

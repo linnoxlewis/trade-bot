@@ -1,7 +1,9 @@
 package consts
 
 const (
+	LocaleDataPath = "internal/locale/i18n"
 	GlobalCacheDb0 = 0
+
 	TimeInForceGTC = "GTC"
 	TimeInForceIOK = "IOK"
 	TimeInForceFOK = "FOK"

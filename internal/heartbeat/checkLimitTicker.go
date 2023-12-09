@@ -6,7 +6,7 @@ import (
 	"github.com/linnoxlewis/trade-bot/internal/domain"
 	"github.com/linnoxlewis/trade-bot/internal/domain/consts"
 	"github.com/linnoxlewis/trade-bot/internal/pkg/excahnger"
-	"github.com/linnoxlewis/trade-bot/internal/transport/api/controller"
+	"github.com/linnoxlewis/trade-bot/internal/pkg/telegram"
 	"github.com/linnoxlewis/trade-bot/pkg/log"
 	"os"
 	"time"
@@ -14,7 +14,7 @@ import (
 
 type LimitOrderTicker struct {
 	cfg              *config.Config
-	orderSrv         controller.OrderService
+	orderSrv         telegram.OrderSrv
 	exchanger        excahnger.Exchanger
 	logger           *log.Logger
 	ordersQueue      *domain.OrdersQueue
@@ -24,7 +24,7 @@ type LimitOrderTicker struct {
 }
 
 func NewLimitOrderTicker(cfg *config.Config,
-	orderSrv controller.OrderService,
+	orderSrv telegram.OrderSrv,
 	limitOrdersQueue *domain.OrdersQueue,
 	logger *log.Logger,
 	exchange string,

@@ -7,7 +7,7 @@ import (
 	"github.com/linnoxlewis/trade-bot/internal/domain"
 	"github.com/linnoxlewis/trade-bot/internal/domain/consts"
 	"github.com/linnoxlewis/trade-bot/internal/helper"
-	"github.com/linnoxlewis/trade-bot/internal/transport/api/controller"
+	ordSrv "github.com/linnoxlewis/trade-bot/internal/pkg/telegram"
 	"github.com/linnoxlewis/trade-bot/pkg/i18n"
 	"github.com/linnoxlewis/trade-bot/pkg/log"
 	"github.com/linnoxlewis/trade-bot/pkg/telegram"
@@ -21,7 +21,7 @@ var executeFailed = "executeFailed"
 
 type TpSlTicker struct {
 	cfg         *config.Config
-	orderSrv    controller.OrderService
+	orderSrv    ordSrv.OrderSrv
 	keyDbCli    *redis.Client
 	telegramCli *telegram.Client
 	logger      *log.Logger
@@ -33,7 +33,7 @@ type TpSlTicker struct {
 }
 
 func NewTpSlTicker(cfg *config.Config,
-	orderSrv controller.OrderService,
+	orderSrv ordSrv.OrderSrv,
 	cache *redis.Client,
 	logger *log.Logger,
 	telegramCli *telegram.Client,
