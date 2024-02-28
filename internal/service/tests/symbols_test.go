@@ -9,7 +9,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/linnoxlewis/trade-bot/internal/domain"
 	"github.com/linnoxlewis/trade-bot/internal/service"
-	mock_service "github.com/linnoxlewis/trade-bot/internal/service/tests/repo_mocks"
+	mock_service "github.com/linnoxlewis/trade-bot/internal/service/tests/mocks"
 	"github.com/linnoxlewis/trade-bot/pkg/log"
 	"github.com/stretchr/testify/assert"
 )

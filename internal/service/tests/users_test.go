@@ -3,14 +3,13 @@ package tests
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/golang/mock/gomock"
 	"github.com/linnoxlewis/trade-bot/config"
 	"github.com/linnoxlewis/trade-bot/internal/domain/consts"
 	srvErr "github.com/linnoxlewis/trade-bot/internal/errors"
 	"github.com/linnoxlewis/trade-bot/internal/helper"
 	"github.com/linnoxlewis/trade-bot/internal/service"
-	mock_service "github.com/linnoxlewis/trade-bot/internal/service/tests/repo_mocks"
+	mock_service "github.com/linnoxlewis/trade-bot/internal/service/tests/mocks"
 	"github.com/linnoxlewis/trade-bot/pkg/i18n"
 	"github.com/linnoxlewis/trade-bot/pkg/log"
 	"github.com/stretchr/testify/assert"
@@ -59,9 +58,8 @@ func TestUserService_CreateUser(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			fmt.Println("start test:", tc.name)
-			mockUserRepo.EXPECT().ExistUser(gomock.Any(), gomock.Any()).Return(tc.existUser)
-			mockUserRepo.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Return(tc.createUserError)
+			mockUserRepo.EXPECT().ExistUser(gomock.Any(), gomock.Any()).Return(tc.existUser).AnyTimes()
+			mockUserRepo.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Return(tc.createUserError).AnyTimes()
 
 			err := userService.CreateUser(context.Background(), "username", 123)
 			if err != nil {
@@ -73,7 +71,6 @@ func TestUserService_CreateUser(t *testing.T) {
 	}
 }
 
-/*
 func TestUserService_IsAdmin(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -91,7 +88,7 @@ func TestUserService_IsAdmin(t *testing.T) {
 		isAdminError      error
 		expectedIsAdmin   bool
 		expectedError     bool
-		expectedErrorCode string
+		expectedErrorCode int
 	}{
 		{
 			name:              "Is admin success",
@@ -100,7 +97,7 @@ func TestUserService_IsAdmin(t *testing.T) {
 			isAdminError:      nil,
 			expectedIsAdmin:   true,
 			expectedError:     false,
-			expectedErrorCode: "",
+			expectedErrorCode: 200,
 		},
 		{
 			name:              "User doesn't exist",
@@ -109,7 +106,7 @@ func TestUserService_IsAdmin(t *testing.T) {
 			isAdminError:      nil,
 			expectedIsAdmin:   false,
 			expectedError:     false,
-			expectedErrorCode: "",
+			expectedErrorCode: 400,
 		},
 		{
 			name:              "Error getting admin status",
@@ -118,7 +115,7 @@ func TestUserService_IsAdmin(t *testing.T) {
 			isAdminError:      errors.New("error getting admin status"),
 			expectedIsAdmin:   false,
 			expectedError:     true,
-			expectedErrorCode: "",
+			expectedErrorCode: 500,
 		},
 	}
 
@@ -184,4 +181,4 @@ func TestUserService_GetAdmins(t *testing.T) {
 			}
 		})
 	}
-}*/
+}
