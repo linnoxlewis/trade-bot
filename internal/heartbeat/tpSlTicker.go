@@ -16,8 +16,10 @@ import (
 	"time"
 )
 
-var successExecuted = "successExecuted"
-var executeFailed = "executeFailed"
+var (
+	successExecuted = "successExecuted"
+	executeFailed   = "executeFailed"
+)
 
 type TpSlTicker struct {
 	cfg         *config.Config
@@ -53,7 +55,7 @@ func NewTpSlTicker(cfg *config.Config,
 		exchange:    exchange,
 		telegramCli: telegramCli,
 		i18n:        i18n,
-		debugMode:   false,
+		debugMode:   debugMode,
 	}
 
 	result.checkQueue()
@@ -84,7 +86,6 @@ func (t *TpSlTicker) checkOrders() {
 			if v.Inwork == true {
 				continue
 			}
-
 			go t.checkTpSl(v)
 		}
 	}

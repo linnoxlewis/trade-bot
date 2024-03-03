@@ -26,7 +26,9 @@ func (a *ApiKeys) Validate() error {
 	return validation.ValidateStruct(a,
 		validation.Field(&a.PubKey, validation.Required.Error("empty_field")),
 		validation.Field(&a.PrivKey, validation.Required.Error("empty_field")),
+		validation.Field(&a.UserId, validation.Required.Error("empty_field")),
 		validation.Field(&a.Exchange, validation.Required.Error("empty_field")))
+
 }
 
 func (a *ApiKeys) EmptyPassPhrase() bool {

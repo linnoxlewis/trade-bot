@@ -13,7 +13,7 @@ import (
 	"github.com/linnoxlewis/trade-bot/internal/domain/dto"
 	"github.com/linnoxlewis/trade-bot/internal/helper"
 	"github.com/linnoxlewis/trade-bot/internal/helper/conversion"
-	"github.com/linnoxlewis/trade-bot/internal/pkg/excahnger"
+	"github.com/linnoxlewis/trade-bot/internal/pkg/exchanger"
 	"math/big"
 	"strings"
 )
@@ -45,7 +45,7 @@ type OrderRepo interface {
 
 type Order struct {
 	cfg               *config.Config
-	exchanger         excahnger.Exchanger
+	exchanger         exchanger.Exchanger
 	apiKeyRepo        ApiKeyRepo
 	orderRepo         OrderRepo
 	i18n              *i18n.I18n
@@ -56,7 +56,7 @@ type Order struct {
 }
 
 func NewOrder(cfg *config.Config,
-	exchanger excahnger.Exchanger,
+	exchanger exchanger.Exchanger,
 	apiKeyRepo ApiKeyRepo,
 	orderRepo OrderRepo,
 	binanceQueue *domain.OrdersQueue,

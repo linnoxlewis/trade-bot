@@ -51,7 +51,7 @@ func (u *UserService) CreateUser(ctx context.Context, username string, tgId int6
 }
 
 func (u *UserService) IsAdmin(ctx context.Context, tgId int64) bool {
-	if u.userRepo.ExistUser(ctx, tgId) {
+	if !u.userRepo.ExistUser(ctx, tgId) {
 		return false
 	}
 

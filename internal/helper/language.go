@@ -1,11 +1,16 @@
 package helper
 
+const (
+	RuLang = "ru"
+	EnLang = "en"
+)
+
 func GetLanguageList() []string {
-	return []string{"ru", "en"}
+	return []string{RuLang, EnLang}
 }
 
 func GetDefaultLg() string {
-	return "en"
+	return EnLang
 }
 
 func GetLang(lang string) string {

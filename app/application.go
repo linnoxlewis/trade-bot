@@ -7,7 +7,7 @@ import (
 	"github.com/linnoxlewis/trade-bot/internal/domain/consts"
 	"github.com/linnoxlewis/trade-bot/internal/heartbeat"
 	"github.com/linnoxlewis/trade-bot/internal/helper"
-	"github.com/linnoxlewis/trade-bot/internal/pkg/excahnger"
+	"github.com/linnoxlewis/trade-bot/internal/pkg/exchanger"
 	"github.com/linnoxlewis/trade-bot/internal/pkg/telegram"
 	"github.com/linnoxlewis/trade-bot/internal/repository"
 	"github.com/linnoxlewis/trade-bot/internal/service"
@@ -44,7 +44,7 @@ func Run(ctx context.Context) {
 	binanceQueue := domain.NewOrderQueue(consts.Binance)
 	limitBinanceQueue := domain.NewOrderQueue(consts.Binance)
 
-	exchangePkg := excahnger.NewExchanger(cfg.GetTestnet())
+	exchangePkg := exchanger.NewExchanger(cfg.GetTestnet())
 
 	apiKeysRepo := repository.NewApiKeyRepo(database)
 	userRepo := repository.NewUserRepository(database)
@@ -59,7 +59,7 @@ func Run(ctx context.Context) {
 
 	admins, err := userSrv.GetAdmins(ctx)
 	if err != nil {
-		panic("cant get admin list")
+		//panic("cant get admin list")
 	}
 
 	tg := tgCli.New(cfg.GetTgToken())
@@ -87,7 +87,7 @@ func Run(ctx context.Context) {
 		}
 	}
 
-	for _, v := range excahnger.ExchangeList {
+	for _, v := range exchanger.ExchangeList {
 		exchange := v
 		for _, symbolVal := range symbols {
 			priceTicker, err := heartbeat.NewTradePriceTicker(cfg,

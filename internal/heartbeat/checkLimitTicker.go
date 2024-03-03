@@ -5,7 +5,7 @@ import (
 	"github.com/linnoxlewis/trade-bot/config"
 	"github.com/linnoxlewis/trade-bot/internal/domain"
 	"github.com/linnoxlewis/trade-bot/internal/domain/consts"
-	"github.com/linnoxlewis/trade-bot/internal/pkg/excahnger"
+	"github.com/linnoxlewis/trade-bot/internal/pkg/exchanger"
 	"github.com/linnoxlewis/trade-bot/internal/pkg/telegram"
 	"github.com/linnoxlewis/trade-bot/pkg/log"
 	"os"
@@ -15,7 +15,7 @@ import (
 type LimitOrderTicker struct {
 	cfg              *config.Config
 	orderSrv         telegram.OrderSrv
-	exchanger        excahnger.Exchanger
+	exchanger        exchanger.Exchanger
 	logger           *log.Logger
 	ordersQueue      *domain.OrdersQueue
 	limitOrdersQueue *domain.OrdersQueue
@@ -49,7 +49,6 @@ func (l *LimitOrderTicker) Tick(ctx context.Context, interrupt chan os.Signal) {
 		select {
 		case <-interrupt:
 			l.logger.InfoLog.Println("Limit orders Ticker stop")
-
 		case <-ctx.Done():
 			l.logger.InfoLog.Println("Limit orders Ticker stop")
 			return
@@ -66,7 +65,6 @@ func (l *LimitOrderTicker) checkOrders(ctx context.Context) {
 			if v.Inwork == true {
 				continue
 			}
-
 			go l.checkOrder(ctx, v)
 		}
 	}
@@ -99,6 +97,7 @@ func (l *LimitOrderTicker) checkOrder(ctx context.Context, order *domain.Order) 
 		err = l.orderSrv.SetFilledLimitOrder(ctx, order)
 		if err != nil {
 			l.logger.ErrorLog.Println("err set status filled order:", order.Id, err)
+
 			return
 		}
 	}
