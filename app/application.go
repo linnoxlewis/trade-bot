@@ -7,7 +7,7 @@ import (
 	"github.com/linnoxlewis/trade-bot/internal/domain/consts"
 	"github.com/linnoxlewis/trade-bot/internal/heartbeat"
 	"github.com/linnoxlewis/trade-bot/internal/helper"
-	"github.com/linnoxlewis/trade-bot/internal/pkg/excahnger"
+	"github.com/linnoxlewis/trade-bot/internal/pkg/exchanger"
 	"github.com/linnoxlewis/trade-bot/internal/pkg/telegram"
 	"github.com/linnoxlewis/trade-bot/internal/repository"
 	"github.com/linnoxlewis/trade-bot/internal/service"
@@ -24,15 +24,12 @@ import (
 	"time"
 )
 
-var localePath = "internal/locale/i18n"
-
 func Run(ctx context.Context) {
 	sgn := make(chan os.Signal, 1)
 	cfg := config.NewConfig()
 	logger := log.NewLogger()
 
-	langs := helper.GetLanguageList()
-	i18n := i18n2.NewI18n(localePath, langs)
+	i18n := i18n2.NewI18n(consts.LocaleDataPath, helper.GetLanguageList())
 
 	keyDb := keydb.NewConnection(
 		cfg.GetGlobalCacheAddress(),
@@ -47,14 +44,14 @@ func Run(ctx context.Context) {
 	binanceQueue := domain.NewOrderQueue(consts.Binance)
 	limitBinanceQueue := domain.NewOrderQueue(consts.Binance)
 
-	exchangePkg := excahnger.NewExchanger(cfg.GetTestnet())
+	exchangePkg := exchanger.NewExchanger(cfg.GetTestnet())
 
 	apiKeysRepo := repository.NewApiKeyRepo(database)
 	userRepo := repository.NewUserRepository(database)
 	orderRepo := repository.NewOrderRepository(database)
 	symbolsRepo := repository.NewSymbolRepository(database)
 
-	userSrv := service.NewUserService(cfg, userRepo, i18n, *logger)
+	userSrv := service.NewUserService(cfg, userRepo, i18n, logger)
 	apiKeySrv := service.NewApiKeysService(cfg, apiKeysRepo, userRepo, i18n, logger)
 	orderSrv := service.NewOrder(cfg, exchangePkg, apiKeysRepo, orderRepo, binanceQueue, limitBinanceQueue, keyDb, i18n, logger)
 	symbolSrv := service.NewSymbolService(orderRepo, symbolsRepo, logger)
@@ -62,7 +59,7 @@ func Run(ctx context.Context) {
 
 	admins, err := userSrv.GetAdmins(ctx)
 	if err != nil {
-		panic("cant get admin list")
+		//panic("cant get admin list")
 	}
 
 	tg := tgCli.New(cfg.GetTgToken())
@@ -90,7 +87,7 @@ func Run(ctx context.Context) {
 		}
 	}
 
-	for _, v := range excahnger.ExchangeList {
+	for _, v := range exchanger.ExchangeList {
 		exchange := v
 		for _, symbolVal := range symbols {
 			priceTicker, err := heartbeat.NewTradePriceTicker(cfg,

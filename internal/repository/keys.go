@@ -92,12 +92,12 @@ func (a *ApiKeyRepo) GetApiKeysByUserId(ctx context.Context, userId int64) (apiK
 
 	apiKeysList := make([]*domain.ApiKeys, 0)
 	for rows.Next() {
-		var mdl *domain.ApiKeys
+		mdl := &domain.ApiKeys{}
 		err = rows.Scan(&mdl.UserId,
+			&mdl.Exchange,
 			&mdl.PubKey,
 			&mdl.PrivKey,
-			&mdl.Passphrase,
-			&mdl.Exchange)
+			&mdl.Passphrase)
 		if err != nil {
 			return nil, err
 		}

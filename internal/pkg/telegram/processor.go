@@ -47,6 +47,9 @@ type OrderSrv interface {
 	ExecuteTpSlOrder(ctx context.Context, userId int64, order *domain.Order) (int64, error)
 	UpdateTpslOrder(ctx context.Context, orderDto *dto.UpdateTpSl) error
 	GetUserActiveOrders(ctx context.Context, userId int64, exchange string) ([]domain.Order, error)
+	GetOrder(ctx context.Context, orderId int64, tgUserId int64, symbol, exchange string, inExchange bool) (*domain.Order, error)
+	SetFilledLimitOrder(ctx context.Context, order *domain.Order) error
+	GetLimitOrders(ctx context.Context, exchange string) ([]*domain.Order, error)
 }
 
 type AccountSrv interface {

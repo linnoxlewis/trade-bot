@@ -30,9 +30,9 @@ func NewApiServer(
 ) *ApiServer {
 	engine := gin.Default()
 	gin.SetMode(serverMode)
-	engine.GET("/ping", func(c *gin.Context) {
+	engine.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
+			"status": "OK",
 		})
 	})
 	engine.GET("/server-time", func(c *gin.Context) {
@@ -42,7 +42,8 @@ func NewApiServer(
 	})
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	v1.RegisterApiKeyRoutes(engine, apikeySrv, logger)
+	apiKeyCtrl := ctrl.NewApiKeyController(apikeySrv, logger)
+	v1.RegisterApiKeyRoutes(engine, apiKeyCtrl)
 	server := &http.Server{
 		Addr:     port,
 		Handler:  engine,

@@ -5,7 +5,7 @@ import (
 	"github.com/linnoxlewis/trade-bot/config"
 	"github.com/linnoxlewis/trade-bot/internal/domain"
 	"github.com/linnoxlewis/trade-bot/internal/errors"
-	"github.com/linnoxlewis/trade-bot/internal/pkg/excahnger"
+	"github.com/linnoxlewis/trade-bot/internal/pkg/exchanger"
 	"github.com/linnoxlewis/trade-bot/pkg/i18n"
 	"github.com/linnoxlewis/trade-bot/pkg/log"
 )
@@ -13,14 +13,14 @@ import (
 type AccountService struct {
 	cfg        *config.Config
 	apiKeyRepo ApiKeyRepo
-	exchanger  excahnger.Exchanger
+	exchanger  exchanger.Exchanger
 	i18n       *i18n.I18n
 	logger     *log.Logger
 }
 
 func NewAccountService(cfg *config.Config,
 	apiKeyRepo ApiKeyRepo,
-	exchanger excahnger.Exchanger,
+	exchanger exchanger.Exchanger,
 	i18n *i18n.I18n,
 	logger *log.Logger) *AccountService {
 	return &AccountService{

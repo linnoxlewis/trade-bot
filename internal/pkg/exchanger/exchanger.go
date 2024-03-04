@@ -1,4 +1,4 @@
-package excahnger
+package exchanger
 
 import (
 	"github.com/linnoxlewis/trade-bot/internal/domain"

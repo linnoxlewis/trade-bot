@@ -5,6 +5,7 @@ import (
 	"github.com/linnoxlewis/trade-bot/config"
 	"github.com/linnoxlewis/trade-bot/internal/domain"
 	"github.com/linnoxlewis/trade-bot/internal/errors"
+	"github.com/linnoxlewis/trade-bot/internal/helper"
 	"github.com/linnoxlewis/trade-bot/pkg/i18n"
 	"github.com/linnoxlewis/trade-bot/pkg/log"
 )
@@ -22,13 +23,13 @@ type UserService struct {
 	cfg      *config.Config
 	userRepo UserRepo
 	i18n     *i18n.I18n
-	logger   log.Logger
+	logger   *log.Logger
 }
 
 func NewUserService(cfg *config.Config,
 	userRepo UserRepo,
 	i18n *i18n.I18n,
-	logger log.Logger) *UserService {
+	logger *log.Logger) *UserService {
 	return &UserService{cfg,
 		userRepo,
 		i18n,
@@ -37,7 +38,7 @@ func NewUserService(cfg *config.Config,
 
 func (u *UserService) CreateUser(ctx context.Context, username string, tgId int64) (err error) {
 	if u.userRepo.ExistUser(ctx, tgId) {
-		return errors.BadRequestError(u.i18n.T(userAlreadyExist, nil, "ru"))
+		return errors.BadRequestError(u.i18n.T(userAlreadyExist, nil, helper.GetDefaultLg()))
 	}
 
 	if err = u.userRepo.CreateUser(ctx, &domain.User{ID: tgId, Username: username}); err != nil {
@@ -50,7 +51,7 @@ func (u *UserService) CreateUser(ctx context.Context, username string, tgId int6
 }
 
 func (u *UserService) IsAdmin(ctx context.Context, tgId int64) bool {
-	if u.userRepo.ExistUser(ctx, tgId) {
+	if !u.userRepo.ExistUser(ctx, tgId) {
 		return false
 	}
 

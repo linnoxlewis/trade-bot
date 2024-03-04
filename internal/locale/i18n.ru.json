@@ -24,7 +24,7 @@
     "other": "Данного ордера не существует"
   },
 
-  "apiKeysNotFound ": {
+  "apiKeysNotFound": {
     "description": "api keys not found",
     "one": "Ключи биржи не найдены",
     "other": "Ключи биржи не найдены"

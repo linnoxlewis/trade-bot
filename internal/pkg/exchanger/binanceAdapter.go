@@ -1,4 +1,4 @@
-package excahnger
+package exchanger
 
 import (
 	"context"
