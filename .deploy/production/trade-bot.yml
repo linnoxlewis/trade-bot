@@ -30,10 +30,7 @@ lifecycle:
         - sh
         - -c
         - sleep 5
-
-imagePullSecrets:
-  - name: harbor-registry-secret
-
+        
 resources:
   requests:
     cpu: "25m"
@@ -80,11 +77,11 @@ service:
   ports:
     - port: 80
       targetPort: 8080
-      name: api
+      name: trade-bot
 
 ports:
-  - name: api
-    containerPort: 8081
+  - name: trade-bot
+    containerPort: 8080
     protocol: TCP
 
 ingress:
@@ -95,6 +92,6 @@ ingress:
       annotations:
         nginx.ingress.kubernetes.io/rewrite-target: /$2
       hosts:
-        - name: trade-bot.local
+        - name: linnoxlewis.trade-bot.ru
           path: /api(/|$)(.*)
           tls: false
