@@ -44,35 +44,29 @@ type OrderRepo interface {
 }
 
 type Order struct {
-	cfg               *config.Config
-	exchanger         exchanger.Exchanger
-	apiKeyRepo        ApiKeyRepo
-	orderRepo         OrderRepo
-	i18n              *i18n.I18n
-	logger            *log.Logger
-	binanceQueue      *domain.OrdersQueue
-	limitBinanceQueue *domain.OrdersQueue
-	keyDbCli          *redis.Client
+	cfg        *config.Config
+	exchanger  exchanger.Exchanger
+	apiKeyRepo ApiKeyRepo
+	orderRepo  OrderRepo
+	i18n       *i18n.I18n
+	logger     *log.Logger
+	keyDbCli   *redis.Client
 }
 
 func NewOrder(cfg *config.Config,
 	exchanger exchanger.Exchanger,
 	apiKeyRepo ApiKeyRepo,
 	orderRepo OrderRepo,
-	binanceQueue *domain.OrdersQueue,
-	limitBinanceQueue *domain.OrdersQueue,
 	keyDbCli *redis.Client,
 	i18n *i18n.I18n,
 	logger *log.Logger) *Order {
 	return &Order{cfg: cfg,
-		exchanger:         exchanger,
-		apiKeyRepo:        apiKeyRepo,
-		orderRepo:         orderRepo,
-		binanceQueue:      binanceQueue,
-		limitBinanceQueue: limitBinanceQueue,
-		keyDbCli:          keyDbCli,
-		i18n:              i18n,
-		logger:            logger,
+		exchanger:  exchanger,
+		apiKeyRepo: apiKeyRepo,
+		orderRepo:  orderRepo,
+		keyDbCli:   keyDbCli,
+		i18n:       i18n,
+		logger:     logger,
 	}
 }
 
@@ -85,18 +79,9 @@ func (o *Order) CreateOrder(ctx context.Context, orderDto *dto.Order, tgUserId i
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		if err != nil && execOrderId != 0 && order.OrderType == consts.OrderTypeLimit {
-			if err := o.exchanger.CancelOrder(keys,
-				&dto.CancelOrder{Id: orderId,
-					Exchange: orderDto.Exchange,
-					Symbol:   orderDto.Symbol}); err != nil {
-				o.logger.ErrorLog.Println("err cancel order in defer: ", err)
-			}
-		}
-	}()
 
-	if err = o.checkStopPercent(orderDto.StopPercent); orderDto.OrderType == consts.OrderTypeStopLossLimit && err != nil {
+	if err = o.checkStopPercent(orderDto.StopPercent); err != nil &&
+		orderDto.OrderType == consts.OrderTypeStopLossLimit {
 		return nil, err
 	}
 
@@ -105,7 +90,9 @@ func (o *Order) CreateOrder(ctx context.Context, orderDto *dto.Order, tgUserId i
 		if err != nil {
 			return nil, err
 		}
+
 		/*
+			TODO::рулсы биржи
 			price, err = o.validatePrice(price, order.Symbol)
 			if err != nil {
 				return nil, err
@@ -136,7 +123,9 @@ func (o *Order) CreateOrder(ctx context.Context, orderDto *dto.Order, tgUserId i
 			Status:      consts.OrderStatusActive,
 			TpSl:        consts.BaseOrderType,
 		}
+
 		if order.OrderType == consts.OrderTypeMarket {
+			//TODO: price service
 			var price string
 			if err := o.keyDbCli.Get(context.Background(),
 				consts.TradePriceCacheKey+orderDto.Exchange+"_"+orderDto.Symbol).Scan(&price); err != nil {
@@ -184,9 +173,7 @@ func (o *Order) CreateOrder(ctx context.Context, orderDto *dto.Order, tgUserId i
 				return err
 			}
 		}
-		if order.OrderType == consts.OrderTypeLimit {
-			o.limitBinanceQueue.Add(order)
-		}
+
 		return nil
 
 	}); err != nil {
@@ -199,7 +186,6 @@ func (o *Order) CreateOrder(ctx context.Context, orderDto *dto.Order, tgUserId i
 func (o *Order) UpdateTpslOrder(ctx context.Context, orderDto *dto.UpdateTpSl) error {
 	updateTpsl := func(baseOrder *domain.Order,
 		settings *domain.Settings,
-		queue *domain.OrdersQueue,
 		orderType string) error {
 		tpSlOrder, err := o.orderRepo.GetTpSlOrderByBaseOrder(ctx,
 			baseOrder.Id,
@@ -221,7 +207,6 @@ func (o *Order) UpdateTpslOrder(ctx context.Context, orderDto *dto.UpdateTpSl) e
 
 			return errors.InternalServerError(err)
 		}
-		queue.UpdatePrice(tpSlOrder.Symbol, tpSlOrder.Id, price)
 
 		return nil
 	}
@@ -244,16 +229,14 @@ func (o *Order) UpdateTpslOrder(ctx context.Context, orderDto *dto.UpdateTpSl) e
 		return errors.BadRequestError(o.i18n.T(errOrderNotFound, nil, "ru"))
 	}
 
-	queue := o.getExchangeQueue(baseOrder.Exchange)
-
 	if !settings.IsTpEmpty() {
-		if err = updateTpsl(baseOrder, settings, queue, consts.TpOrderType); err != nil {
+		if err = updateTpsl(baseOrder, settings, consts.TpOrderType); err != nil {
 			return err
 		}
 	}
 
 	if !settings.IsSlEmpty() {
-		if err = updateTpsl(baseOrder, settings, queue, consts.SlOrderType); err != nil {
+		if err = updateTpsl(baseOrder, settings, consts.SlOrderType); err != nil {
 			return err
 		}
 	}
@@ -308,11 +291,6 @@ func (o *Order) GetUserActiveOrders(ctx context.Context, userId int64, exchange 
 }
 
 func (o *Order) ExecuteTpSlOrder(ctx context.Context, userId int64, order *domain.Order) (int64, error) {
-	queue := o.getExchangeQueue(order.Exchange)
-	if !queue.Exist(order.Symbol, order.Id) {
-		return 0, nil
-	}
-
 	keys, err := o.getApiKeys(ctx, userId, order.Exchange)
 	if err != nil {
 		return 0, err
@@ -329,30 +307,26 @@ func (o *Order) ExecuteTpSlOrder(ctx context.Context, userId int64, order *domai
 
 		return 0, errors.BadRequestError(err.Error())
 	}
-	queue.Remove(order.Symbol, order.Id)
 
 	o.orderRepo.Atomic(ctx, func(ctx context.Context, orderRepo OrderRepo) error {
 		opposingOrder, err := orderRepo.GetOpposingTpSlOrder(ctx, order)
 		if err != nil {
-			o.logger.ErrorLog.Println("err get opposing order in db: " + err.Error())
+			o.logger.ErrorLog.Println("err get opposing order in postgresDb: " + err.Error())
 
 			return errors.InternalServerError(err)
 		}
 
 		if opposingOrder != nil {
 			if err := orderRepo.CancelOrder(ctx, opposingOrder.Id, opposingOrder.Symbol, opposingOrder.Exchange); err != nil {
-				o.logger.ErrorLog.Println("err cancel opposing order in db: " + err.Error())
+				o.logger.ErrorLog.Println("err cancel opposing order in postgresDb: " + err.Error())
 
 				return errors.InternalServerError(err)
-			}
-			if queue != nil {
-				queue.Remove(opposingOrder.Symbol, opposingOrder.Id)
 			}
 		}
 
 		order.ExecOrderId = excId
 		if err := orderRepo.ExecuteOrder(ctx, order.Id); err != nil {
-			o.logger.ErrorLog.Println("err exec order in db: " + err.Error())
+			o.logger.ErrorLog.Println("err exec order in postgresDb: " + err.Error())
 
 			return errors.InternalServerError(err)
 		}
@@ -388,37 +362,27 @@ func (o *Order) GetOrder(ctx context.Context, orderId int64, tgUserId int64, sym
 }
 
 func (o *Order) SetFilledLimitOrder(ctx context.Context, order *domain.Order) error {
-	limitQueue := o.getLimitExchangeQueue(order.Exchange)
-	if !limitQueue.Exist(order.Symbol, order.Id) {
-		o.logger.InfoLog.Println("not found in queue")
-
-		return nil
-
-	}
-	limitQueue.Remove(order.Symbol, order.Id)
 	err := o.orderRepo.Atomic(ctx, func(ctx context.Context, orderRepo OrderRepo) error {
 		if err := orderRepo.ExecuteOrder(ctx, order.Id); err != nil {
-			o.logger.ErrorLog.Println("err exec order in db: " + err.Error())
+			o.logger.ErrorLog.Println("err exec order in postgresDb: " + err.Error())
 
 			return errors.InternalServerError(err)
 		}
 
 		tpSlOrders, err := orderRepo.GetTpSlOrdersByBaseOrder(ctx, order.Id)
 		if err != nil {
-			o.logger.ErrorLog.Println("err get tpsl orders in db: " + err.Error())
+			o.logger.ErrorLog.Println("err get tpsl orders in postgresDb: " + err.Error())
 
 			return errors.InternalServerError(err)
 		}
 
-		tpSlQueue := o.getExchangeQueue(order.Exchange)
 		for _, v := range tpSlOrders {
 			if err = orderRepo.ActivateOrder(ctx, v.Id); err != nil {
-				o.logger.ErrorLog.Println("err activate orders in db: " + err.Error())
+				o.logger.ErrorLog.Println("err activate orders in postgresDb: " + err.Error())
 
 				return errors.InternalServerError(err)
 			}
 
-			tpSlQueue.Add(v)
 		}
 
 		return nil
@@ -479,14 +443,7 @@ func (o *Order) createTpSlOrder(ctx context.Context, order *domain.Order, tpSlTy
 		return errors.InternalServerError(err)
 	}
 	tpSlOrder.Id = newOrdId
-
-	if order.OrderType == consts.OrderTypeMarket {
-		queue := o.getExchangeQueue(order.Exchange)
-		if queue != nil {
-			queue.Add(tpSlOrder)
-		}
-	}
-
+	
 	return nil
 }
 
@@ -507,16 +464,16 @@ func (o *Order) checkStopPercent(stopPercent string) error {
 func (o *Order) getApiKeys(ctx context.Context, userId int64, exchange string) (*domain.ApiKeys, error) {
 	keys, err := o.apiKeyRepo.GetApiKeysByUserIdAndExchange(ctx, userId, exchange)
 	if err != nil {
-		o.logger.ErrorLog.Println("err get api keys: ", err)
+		o.logger.ErrorLog.Println("err get http keys: ", err)
 	}
 	if keys == nil {
 		return nil, errors.BadRequestError(o.i18n.T(errApiKeysNotFound, nil, "ru"))
 	}
 	if keys.PrivKey != "" {
-		keys.DecodePrivKey(o.cfg.GetApiSecret())
+		keys.DecryptPrivKey(o.cfg.GetApiSecret())
 	}
 	if keys.Passphrase != "" {
-		keys.DecodePassKey(o.cfg.GetApiSecret())
+		keys.DecryptPassphrase(o.cfg.GetApiSecret())
 	}
 
 	return keys, nil
@@ -604,22 +561,4 @@ func (o *Order) getTpSlSide(side string) string {
 	}
 
 	return consts.OrderSideSell
-}
-
-func (o *Order) getExchangeQueue(exchange string) *domain.OrdersQueue {
-	switch exchange {
-	case consts.Binance:
-		return o.binanceQueue
-	default:
-		return nil
-	}
-}
-
-func (o *Order) getLimitExchangeQueue(exchange string) *domain.OrdersQueue {
-	switch exchange {
-	case consts.Binance:
-		return o.limitBinanceQueue
-	default:
-		return nil
-	}
 }

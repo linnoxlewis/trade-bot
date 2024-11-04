@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"fmt"
 	"github.com/linnoxlewis/trade-bot/internal/helper"
 )
 
@@ -17,7 +18,8 @@ func NewApiKeys(userId int64,
 	exchange,
 	pubKey,
 	privKey,
-	passphrase string) *ApiKeys {
+	passphrase string,
+) *ApiKeys {
 	return &ApiKeys{
 		UserId:     userId,
 		Exchange:   exchange,
@@ -27,16 +29,36 @@ func NewApiKeys(userId int64,
 	}
 }
 
-func (a *ApiKeys) EmptyPassPhrase() bool {
+func (a *ApiKeys) EmptyPassphrase() bool {
 	return a.Passphrase == ""
 }
 
-func (a *ApiKeys) DecodePrivKey(secret string) {
-	as, _ := helper.DecryptMessage(a.PrivKey, secret)
+func (a *ApiKeys) DecryptPrivKey(secret string) error {
+	decryptedPrivKey, err := helper.DecryptMessage(a.PrivKey, secret)
+	if err != nil {
+		return fmt.Errorf("failed to decrypt private key: %w", err)
+	}
+	a.PrivKey = decryptedPrivKey
 
-	a.PrivKey = as
+	return nil
 }
 
-func (a *ApiKeys) DecodePassKey(secret string) {
-	a.PrivKey, _ = helper.DecryptMessage(a.Passphrase, secret)
+func (a *ApiKeys) DecryptPassphrase(secret string) error {
+	decryptedPassphrase, err := helper.DecryptMessage(a.Passphrase, secret)
+	if err != nil {
+		return fmt.Errorf("failed to decrypt passphrase: %w", err)
+	}
+	a.Passphrase = decryptedPassphrase
+
+	return nil
+}
+
+func (a *ApiKeys) DecryptField(field *string, secret string) error {
+	decryptedValue, err := helper.DecryptMessage(*field, secret)
+	if err != nil {
+		return fmt.Errorf("failed to decrypt field: %w", err)
+	}
+	*field = decryptedValue
+	
+	return nil
 }

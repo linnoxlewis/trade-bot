@@ -7,10 +7,7 @@ import (
 	"golang.org/x/text/language"
 )
 
-const (
-	jsonType = "json"
-	tmlType  = "toml"
-)
+const jsonType = "json"
 
 type I18n struct {
 	bundle *i18n.Bundle
@@ -29,11 +26,12 @@ func NewI18n(filepath string, languages []string) *I18n {
 }
 
 func (i *I18n) T(identity string,
-	params map[string]interface{},
-	lang string) string {
-	localizer := i18n.NewLocalizer(i.bundle, lang)
+	params map[string]any,
+	lang string,
+) string {
+	localize := i18n.NewLocalizer(i.bundle, lang)
 
-	result := localizer.MustLocalize(&i18n.LocalizeConfig{
+	result := localize.MustLocalize(&i18n.LocalizeConfig{
 		DefaultMessage: &i18n.Message{
 			ID: identity,
 		},

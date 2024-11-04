@@ -1,81 +1,125 @@
 package config
 
-import (
-	"github.com/spf13/viper"
-)
+import "github.com/caarlos0/env/v10"
 
-type Config struct{}
+type Config struct {
+	ServerConfig   ServerConfig   `envPrefix:"SERVER_"`
+	DBConfig       DBConfig       `envPrefix:"DB_"`
+	BinanceConfig  BinanceConfig  `envPrefix:"BINANCE_"`
+	CacheStorage   CacheStorage   `envPrefix:"CACHE_STORAGE_"`
+	TelegramConfig TelegramConfig `envPrefix:"TELEGRAM_"`
+	ServiceConfig  ServiceConfig  `envPrefix:"SERVICE_"`
+}
 
 func NewConfig() *Config {
-	viper.AutomaticEnv()
+	cfg := &Config{}
 
-	return &Config{}
+	if err := env.Parse(&cfg); err != nil {
+		panic(err)
+	}
+
+	return cfg
 }
 
-func (c *Config) GetGrpcPort() string {
-	return viper.GetString("SELF_GRPC_PORT")
+type DBConfig struct {
+	Username string `env:"USERNAME" envDefault:"postgres"`
+	Password string `env:"PASSWORD" envDefault:"postgres"`
+	Dbname   string `env:"DATABASE" envDefault:"postgres"`
+	Host     string `env:"HOST" envDefault:"localhost"`
+	Port     string `env:"PORT" envDefault:"5432"`
 }
 
-func (c *Config) GetDbHost() string {
-	return viper.GetString("DB_HOST")
+func (d *DBConfig) GetDbHost() string {
+	return d.Host
 }
 
-func (c *Config) GetDbUsername() string {
-	return viper.GetString("DB_USER")
+func (d *DBConfig) GetDbUsername() string {
+	return d.Username
 }
 
-func (c *Config) GetDbName() string {
-	return viper.GetString("DB_NAME")
+func (d *DBConfig) GetDbName() string {
+	return d.Dbname
 }
 
-func (c *Config) GetDbPort() string {
-	return viper.GetString("DB_PORT")
+func (d *DBConfig) GetDbPort() string {
+	return d.Port
 }
 
-func (c *Config) GetDbPassword() string {
-	return viper.GetString("DB_PASSWORD")
+func (d *DBConfig) GetDbPassword() string {
+	return d.Password
 }
 
-func (c *Config) GetCodeSalt() string {
-	return viper.GetString("SALT")
+type ServerConfig struct {
+	Port string `env:"PORT" envDefault:"8080"`
+	Mode string `env:"MODE" envDefault:"release"`
 }
 
-func (c *Config) GetEncryptKey() string {
-	return viper.GetString("ENCRYPT_KEY")
+func (s *ServerConfig) GetPort() string {
+	return s.Port
 }
 
-func (c *Config) GetGlobalCacheAddress() string {
-	return viper.GetString("CACHE_ADDRESS")
+func (s *ServerConfig) GetMode() string {
+	return s.Mode
 }
 
-func (c *Config) GetGlobalCachePassword() string {
-	return viper.GetString("CACHE_PASSWORD")
+type BinanceConfig struct {
+	ClientSecretKey string `env:"CLIENT_SECRET_KEY" envDefault:""`
+	ApiSecretKey    string `env:"API_SECRET_KEY" envDefault:""`
+	Testnet         bool   `env:"TESTNET" envDefault:"true"`
 }
 
-func (c *Config) GetClientSecretKey() string {
-	return viper.GetString("CLIENT_SECRET_KEY")
+func (b *BinanceConfig) GetTestnet() bool {
+	return b.Testnet
 }
 
-func (c *Config) GetApiSecret() string {
-	return viper.GetString("API_KEY_SECRET")
+func (b *BinanceConfig) GetApiSecretKey() string {
+	return b.ApiSecretKey
 }
 
-func (c *Config) GetSecretKey() string {
-	return viper.GetString("SECRET_KEY")
+func (b *BinanceConfig) GetClientSecretKey() string {
+	return b.ClientSecretKey
 }
 
-func (c *Config) GetApiPort() string {
-	return viper.GetString("SELF_API_PORT")
+type CacheStorage struct {
+	Address  string `env:"ADDRESS" envDefault:"localhost:6379"`
+	Password string `env:"PASSWORD" envDefault:""`
+	DB       int    `env:"DB" envDefault:"0"`
 }
 
-func (c *Config) GetApiServerMode() string {
-	return viper.GetString("SERVER_MODE")
+func (c *CacheStorage) GetAddress() string {
+	return c.Address
 }
 
-func (c *Config) GetTgToken() string {
-	return viper.GetString("TELEGRAM_TOKEN")
+func (c *CacheStorage) GetPassword() string {
+	return c.Password
 }
 
-func (c *Config) GetTestnet() bool {
-	return viper.GetBool("TESTNET")
+func (c *CacheStorage) GetDB() int {
+	return c.DB
+}
+
+type TelegramConfig struct {
+	Token string `env:"TOKEN" envDefault:""`
+}
+
+func (t *TelegramConfig) GetTgToken() string {
+	return t.Token
+}
+
+type ServiceConfig struct {
+	CodeSalt   string `env:"CODE_SALT" envDefault:""`
+	EncryptKey string `env:"ENCRYPT_KEY" envDefault:""`
+	SecretKey  string `env:"SECRET_KEY" envDefault:""`
+}
+
+func (s *ServiceConfig) GetCodeSalt() string {
+	return s.CodeSalt
+}
+
+func (s *ServiceConfig) GetEncryptKey() string {
+	return s.EncryptKey
+}
+
+func (s *ServiceConfig) GetSecretKey() string {
+	return s.SecretKey
 }

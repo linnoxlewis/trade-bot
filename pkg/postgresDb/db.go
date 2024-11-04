@@ -1,7 +1,6 @@
-package db
+package postgresDb
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"github.com/linnoxlewis/trade-bot/config"
@@ -16,7 +15,7 @@ var db *sql.DB
 
 const dbUri = "host=%s user=%s dbname=%s port=%s sslmode=disable password=%s"
 
-func newDb(cfg *config.Config, logger *log.Logger) *sql.DB {
+func newDb(cfg config.DBConfig, logger *log.Logger) *sql.DB {
 	url := fmt.Sprintf(dbUri,
 		cfg.GetDbHost(),
 		cfg.GetDbUsername(),
@@ -27,22 +26,19 @@ func newDb(cfg *config.Config, logger *log.Logger) *sql.DB {
 
 	db, err := sql.Open("pgx", url)
 	if err != nil {
-		logger.ErrorLog.Panic("Cant connect db: ", err)
+		logger.ErrorLog.Panic("Cant connect postgresDb: ", err)
 		os.Exit(1)
 	}
 
 	return db
 }
 
-func StartDB(cfg *config.Config, logger *log.Logger) *sql.DB {
+func StartDB(cfg config.DBConfig, logger *log.Logger) *sql.DB {
 	var once sync.Once
 	if db == nil {
 		once.Do(func() {
 			db = newDb(cfg, logger)
 		})
-	} else {
-		logger.ErrorLog.Println("Single instance already created.")
-		return db
 	}
 
 	logger.InfoLog.Println("Connecting to database...")
@@ -50,9 +46,10 @@ func StartDB(cfg *config.Config, logger *log.Logger) *sql.DB {
 	return db
 }
 
-func CloseDB(ctx context.Context, db *sql.DB, logger *log.Logger) {
-	logger.InfoLog.Println("Close database Connection")
+func CloseDB(db *sql.DB, logger *log.Logger) {
 	if err := db.Close(); err != nil {
 		logger.ErrorLog.Panic(err)
 	}
+
+	logger.InfoLog.Println("Close database Connection")
 }

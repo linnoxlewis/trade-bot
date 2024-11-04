@@ -1,4 +1,4 @@
-FROM golang:1.21
+FROM golang:1.22
 WORKDIR /var/server/trade-bot
 
 COPY go.mod go.sum ./

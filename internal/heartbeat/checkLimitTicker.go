@@ -107,7 +107,7 @@ func (l *LimitOrderTicker) checkLimitQueue() {
 	if l.limitOrdersQueue.Len() == 0 {
 		orders, err := l.orderSrv.GetLimitOrders(context.Background(), l.exchange)
 		if err != nil {
-			l.logger.ErrorLog.Println("Error get Orders from db: ", err)
+			l.logger.ErrorLog.Println("Error get Orders from postgresDb: ", err)
 
 			return
 		}

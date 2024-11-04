@@ -8,7 +8,7 @@ type ExecuteOrder struct {
 	UserId   int64
 	OrderId  int64
 	Symbol   string
-	Exchange string `json:"exchange"`
+	Exchange string
 }
 
 func NewExecuteOrder(

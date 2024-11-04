@@ -3,22 +3,23 @@ package domain
 import "sync"
 
 type Order struct {
-	Id          int64  `json:"id"`
-	ExecOrderId int64  `json:"execOrderId"`
-	UserId      int64  `json:"user_id"`
-	Symbol      string `json:"symbol"`
-	Side        string `json:"side"`
-	OrderType   string `json:"orderType"`
-	Quantity    string `json:"quantity"`
-	Price       string `json:"price"`
-	TimeInForce string `json:"timeInForce"`
-	StopPrice   string `json:"stopPrice"`
-	IcebergQty  string `json:"icebergQty"`
-	Exchange    string `json:"exchange"`
-	Status      string `json:"status"`
-	TpSl        string `json:"tpSl"`
-	Inwork      bool   `json:"-"`
+	Id          int64
+	ExecOrderId int64
+	UserId      int64
+	Symbol      string
+	Side        string
+	OrderType   string
+	Quantity    string
+	Price       string
+	TimeInForce string
+	StopPrice   string
+	IcebergQty  string
+	Exchange    string
+	Status      string
+	TpSl        string
+	Inwork      bool
 	sync.RWMutex
+	Settings
 }
 
 type OrderList struct {

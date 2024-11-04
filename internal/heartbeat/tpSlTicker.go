@@ -25,7 +25,7 @@ type TpSlTicker struct {
 	cfg         *config.Config
 	orderSrv    ordSrv.OrderSrv
 	keyDbCli    *redis.Client
-	telegramCli *telegram.Client
+	telegramCli *telegram.TgClient
 	logger      *log.Logger
 	ordersQueue *domain.OrdersQueue
 	ticker      *time.Ticker
@@ -38,7 +38,7 @@ func NewTpSlTicker(cfg *config.Config,
 	orderSrv ordSrv.OrderSrv,
 	cache *redis.Client,
 	logger *log.Logger,
-	telegramCli *telegram.Client,
+	telegramCli *telegram.TgClient,
 	heartbeatPeriod time.Duration,
 	ordersQueue *domain.OrdersQueue,
 	exchange string,
@@ -240,7 +240,7 @@ func (t *TpSlTicker) checkQueue() {
 	if t.ordersQueue.Len() == 0 {
 		orders, err := t.orderSrv.GetActiveTpSlOrders(context.Background(), t.exchange)
 		if err != nil {
-			t.logger.ErrorLog.Println("Error get Orders from db: ", err)
+			t.logger.ErrorLog.Println("Error get Orders from postgresDb: ", err)
 		}
 		for _, v := range orders {
 			t.ordersQueue.Add(v)

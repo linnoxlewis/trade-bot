@@ -1,8 +1,8 @@
 package domain
 
 type BalanceSymbol struct {
-	Symbol   string `json:"symbol"`
-	Quantity string `json:"quantity"`
+	Symbol   string
+	Quantity string
 }
 
 func NewBalanceSymbol(symbol, quantity string) BalanceSymbol {
@@ -12,4 +12,4 @@ func NewBalanceSymbol(symbol, quantity string) BalanceSymbol {
 	}
 }
 
-type Balance []BalanceSymbol
+type Balances []BalanceSymbol

@@ -18,7 +18,9 @@ func NewApiKeyRepo(db *sql.DB) *ApiKeyRepo {
 	}
 }
 
-func (a *ApiKeyRepo) AddApiKeys(ctx context.Context, keys *domain.ApiKeys) (err error) {
+func (a *ApiKeyRepo) AddApiKeys(ctx context.Context,
+	keys *domain.ApiKeys,
+) (err error) {
 	query := `INSERT INTO user_api_keys (user_id, 
                            exchange, 
                            pub_key, 
@@ -36,7 +38,10 @@ func (a *ApiKeyRepo) AddApiKeys(ctx context.Context, keys *domain.ApiKeys) (err 
 	return
 }
 
-func (a *ApiKeyRepo) DeleteApiKey(ctx context.Context, userId int64, exchange string) (err error) {
+func (a *ApiKeyRepo) DeleteApiKey(ctx context.Context,
+	userId int64,
+	exchange string,
+) (err error) {
 	query := `DELETE FROM user_api_keys WHERE user_id = $1 AND exchange = $2`
 	_, err = a.db.ExecContext(ctx, query, userId, exchange)
 
@@ -50,7 +55,10 @@ func (a *ApiKeyRepo) ClearApiKey(ctx context.Context, userId int64) (err error) 
 	return
 }
 
-func (a *ApiKeyRepo) GetApiKeysByUserIdAndExchange(ctx context.Context, userId int64, exchange string) (*domain.ApiKeys, error) {
+func (a *ApiKeyRepo) GetApiKeysByUserIdAndExchange(ctx context.Context,
+	userId int64,
+	exchange string,
+) (*domain.ApiKeys, error) {
 	var apiKeys domain.ApiKeys
 	query := `SELECT user_id,
        exchange, 
@@ -74,7 +82,9 @@ func (a *ApiKeyRepo) GetApiKeysByUserIdAndExchange(ctx context.Context, userId i
 	return &apiKeys, nil
 }
 
-func (a *ApiKeyRepo) GetApiKeysByUserId(ctx context.Context, userId int64) (apiKeys []*domain.ApiKeys, err error) {
+func (a *ApiKeyRepo) GetApiKeysByUserId(ctx context.Context,
+	userId int64,
+) (apiKeys []*domain.ApiKeys, err error) {
 	query := `SELECT user_id, 
        exchange, 
        pub_key, 

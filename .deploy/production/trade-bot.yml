@@ -77,21 +77,21 @@ service:
   ports:
     - port: 80
       targetPort: 8080
-      name: trade-bot
+      name: trade_bot
 
 ports:
-  - name: trade-bot
+  - name: trade_bot
     containerPort: 8080
     protocol: TCP
 
 ingress:
   enabled: true
-  ingressClassName: trade-bot-ingress
+  ingressClassName: trade_bot-ingress
   objects:
     - servicePort: 80
       annotations:
         nginx.ingress.kubernetes.io/rewrite-target: /$2
       hosts:
-        - name: linnoxlewis.trade-bot.ru
-          path: /api(/|$)(.*)
+        - name: linnoxlewis.trade_bot.ru
+          path: /http(/|$)(.*)
           tls: false

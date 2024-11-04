@@ -2,150 +2,114 @@ package telegram
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"path"
-	"strconv"
 )
 
-type Client struct {
-	basePath string
-	client   http.Client
-}
-
 const (
+	apiEndpoint = "http.telegram.org"
+
 	getUpdatesMethod    = "getUpdates"
 	sendMessageMethod   = "sendMessage"
 	deleteMessageMethod = "deleteMessage"
-	apiEndpoint         = "api.telegram.org"
 )
 
-func New(token string) *Client {
-	return &Client{
+type ItgClient interface {
+	Updates(ctx context.Context, offset, limit int) ([]Update, error)
+	SendMessage(ctx context.Context, chatID int, text, keyboard string) error
+	DeleteMessage(ctx context.Context, chatID, messageId int) error
+}
+
+type TgClient struct {
+	basePath string
+	client   *http.Client
+}
+
+func NewTgClient(token string) *TgClient {
+	return &TgClient{
 		basePath: newBasePath(token),
-		client:   http.Client{},
+		client:   &http.Client{},
 	}
 }
 
-func newBasePath(token string) string {
-	return "bot" + token
-}
+func (c *TgClient) Updates(ctx context.Context, offset, limit int) ([]Update, error) {
+	queryParams := url.Values{}
+	queryParams.Add("offset", intToString(offset))
+	queryParams.Add("limit", intToString(limit))
 
-func (c *Client) Updates(ctx context.Context, offset int, limit int) (updates []Update, err error) {
-	defer func() {
-		if err != nil {
-			err = errors.New("can't get updates: " + err.Error())
-		}
-	}()
-
-	q := url.Values{}
-	q.Add("offset", strconv.Itoa(offset))
-	q.Add("limit", strconv.Itoa(limit))
-
-	data, err := c.doRequest(getUpdatesMethod, q)
+	data, err := c.doRequest(ctx, getUpdatesMethod, queryParams)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("can't get updates: %w", err)
 	}
 
-	return c.formatResponse(data)
+	updates, err := parseUpdates(data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse updates: %w", err)
+	}
+
+	return updates, nil
 }
 
-func (c *Client) SendMessage(ctx context.Context, chatID int, text, keyboard string) error {
-	q := url.Values{}
-	q.Add("chat_id", strconv.Itoa(chatID))
-	q.Add("text", text)
+func (c *TgClient) SendMessage(ctx context.Context, chatID int, text, keyboard string) error {
+	queryParams := url.Values{}
+	queryParams.Add("chat_id", intToString(chatID))
+	queryParams.Add("text", text)
 	if keyboard != "" {
-		q.Add("parse_mode", "HTML")
-		q.Add("reply_markup", keyboard)
+		queryParams.Add("parse_mode", "HTML")
+		queryParams.Add("reply_markup", keyboard)
 	}
 
-	_, err := c.doRequest(sendMessageMethod, q)
+	_, err := c.doRequest(ctx, sendMessageMethod, queryParams)
 	if err != nil {
-		return errors.New("can't send message:" + err.Error())
+		return fmt.Errorf("can't send message: %w", err)
 	}
 
 	return nil
 }
 
-func (c *Client) DeleteMessage(ctx context.Context, chatID int, messageId int) error {
-	q := url.Values{}
-	q.Add("chat_id", strconv.Itoa(chatID))
-	q.Add("message_id", strconv.Itoa(messageId))
+func (c *TgClient) DeleteMessage(ctx context.Context, chatID, messageId int) error {
+	queryParams := url.Values{}
+	queryParams.Add("chat_id", intToString(chatID))
+	queryParams.Add("message_id", intToString(messageId))
 
-	_, err := c.doRequest(deleteMessageMethod, q)
+	_, err := c.doRequest(ctx, deleteMessageMethod, queryParams)
 	if err != nil {
-		return errors.New("can't send message:" + err.Error())
+		return fmt.Errorf("can't delete message: %w", err)
 	}
 
 	return nil
 }
 
-func (c *Client) doRequest(method string, query url.Values) (data []byte, err error) {
-	defer func() {
-		if err != nil {
-			err = errors.New("can't do request: " + err.Error())
-		}
-	}()
-
-	u := url.URL{
-		Scheme: "https",
-		Host:   apiEndpoint,
-		Path:   path.Join(c.basePath, method),
+func (c *TgClient) doRequest(ctx context.Context, method string, queryParams url.Values) ([]byte, error) {
+	requestURL := url.URL{
+		Scheme:   "https",
+		Host:     apiEndpoint,
+		Path:     path.Join(c.basePath, method),
+		RawQuery: queryParams.Encode(),
 	}
 
-	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL.String(), nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
-
-	req.URL.RawQuery = query.Encode()
 
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("request failed: %w", err)
 	}
-	defer func() { _ = resp.Body.Close() }()
+	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected HTTP status: %s", resp.Status)
+	}
+
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	return body, nil
-}
-
-func (c *Client) formatResponse(data []byte) ([]Update, error) {
-	var res UpdatesResponse
-	if err := json.Unmarshal(data, &res); err != nil {
-		return nil, err
-	}
-	var resRepl UpdatesReplyResponse
-	if err := json.Unmarshal(data, &resRepl); err != nil {
-		return nil, err
-	}
-
-	upds := make([]Update, 0)
-	for _, v := range res.Result {
-		if v.Message != nil {
-			upd := Update{v.ID, v.Message}
-			upds = append(upds, upd)
-		}
-	}
-	for _, v := range resRepl.Result {
-		if v.Message != nil {
-			upd := Update{ID: v.ID, Message: &IncomingMessage{
-				Chat:      v.Message.Message.Chat,
-				Text:      v.Message.Data,
-				From:      v.Message.From,
-				MessageID: v.Message.Message.MessageID,
-				Date:      v.Message.Message.Date,
-			}}
-			upds = append(upds, upd)
-		}
-	}
-
-	return upds, nil
+	return data, nil
 }

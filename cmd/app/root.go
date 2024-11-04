@@ -1,4 +1,4 @@
-package cmd
+package app
 
 import (
 	"context"
@@ -10,11 +10,10 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "Init trade-bot",
-	Short: "Init trade-bot application",
+	Use:   "Init trade_bot",
+	Short: "Init trade_bot application",
 	Run: func(cmd *cobra.Command, args []string) {
-		ctx := context.Background()
-		ctx, cancel := context.WithCancel(ctx)
+		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
 		go func() {

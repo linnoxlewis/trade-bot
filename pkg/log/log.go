@@ -12,15 +12,7 @@ type Logger struct {
 
 func NewLogger() *Logger {
 	return &Logger{
-		ErrorLog: NewErrorLog(),
-		InfoLog:  NewInfoLog(),
+		ErrorLog: log.New(os.Stderr, "ERROR\t", log.LstdFlags|log.Llongfile),
+		InfoLog:  log.New(os.Stdout, "INFO\t", log.LstdFlags),
 	}
-}
-
-func NewInfoLog() *log.Logger {
-	return log.New(os.Stdout, "INFO\t", log.LstdFlags)
-}
-
-func NewErrorLog() *log.Logger {
-	return log.New(os.Stderr, "ERROR\t", log.LstdFlags|log.Llongfile)
 }

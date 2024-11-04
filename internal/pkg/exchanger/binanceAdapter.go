@@ -2,7 +2,6 @@ package exchanger
 
 import (
 	"context"
-	"errors"
 	binanceCli "github.com/adshao/go-binance/v2"
 	"github.com/linnoxlewis/trade-bot/internal/domain"
 	"github.com/linnoxlewis/trade-bot/internal/domain/consts"
@@ -21,7 +20,11 @@ func NewBinanceAdapter(useTestnet bool) *BinanceAdapter {
 	}
 }
 
-func (b *BinanceAdapter) CreateOrder(pubKey, secKey, passPhrase string, order *dto.Order) (int64, error) {
+func (b *BinanceAdapter) CreateOrder(pubKey,
+	secKey,
+	passPhrase string,
+	order *dto.Order,
+) (int64, error) {
 	binanceCli.UseTestnet = b.useTestnet
 	ordType := binanceCli.OrderType(strings.ToUpper(order.OrderType))
 	cli := binanceCli.NewClient(pubKey, secKey).
@@ -44,7 +47,11 @@ func (b *BinanceAdapter) CreateOrder(pubKey, secKey, passPhrase string, order *d
 	return result.OrderID, nil
 }
 
-func (b *BinanceAdapter) CancelOrder(pubKey, secKey, passPhrase string, order *dto.CancelOrder) error {
+func (b *BinanceAdapter) CancelOrder(pubKey,
+	secKey,
+	passPhrase string,
+	order *dto.CancelOrder,
+) error {
 	binanceCli.UseTestnet = b.useTestnet
 	_, err := binanceCli.NewClient(pubKey, secKey).
 		NewCancelOrderService().Symbol(order.Symbol).
@@ -53,8 +60,11 @@ func (b *BinanceAdapter) CancelOrder(pubKey, secKey, passPhrase string, order *d
 	return err
 }
 
-func (b *BinanceAdapter) UpdateOrder(pubKey, secKey, passPhrase string, order *dto.UpdateOrder) (int64, error) {
-	binanceCli.UseTestnet = b.useTestnet
+func (b *BinanceAdapter) UpdateOrder(pubKey,
+	secKey,
+	passPhrase string,
+	order *dto.UpdateOrder,
+) (int64, error) {
 	if err := b.CancelOrder(pubKey, secKey, passPhrase, &dto.CancelOrder{
 		Id:       order.OrderId,
 		Symbol:   order.Symbol,
@@ -73,7 +83,8 @@ func (b *BinanceAdapter) UpdateOrder(pubKey, secKey, passPhrase string, order *d
 	})
 }
 
-func (b *BinanceAdapter) GetBalance(pubKey, secKey, passPhrase string) (domain.Balance, error) {
+func (b *BinanceAdapter) GetBalance(pubKey, secKey, passPhrase string,
+) (domain.Balances, error) {
 	binanceCli.UseTestnet = b.useTestnet
 	result, err := binanceCli.NewClient(pubKey, secKey).
 		NewGetAccountService().Do(context.Background())
@@ -81,10 +92,10 @@ func (b *BinanceAdapter) GetBalance(pubKey, secKey, passPhrase string) (domain.B
 	if err != nil {
 		return nil, err
 	}
-	var balance domain.Balance
+	var balance domain.Balances
 
 	if result.Balances == nil {
-		return nil, errors.New("empty balances")
+		return nil, nil
 	}
 	for _, v := range result.Balances {
 		balSymb := domain.NewBalanceSymbol(v.Asset, v.Free)
@@ -94,7 +105,8 @@ func (b *BinanceAdapter) GetBalance(pubKey, secKey, passPhrase string) (domain.B
 	return balance, nil
 }
 
-func (b *BinanceAdapter) GetOpenOrders(pubKey, secKey, passPhrase, symbol string) ([]domain.Order, error) {
+func (b *BinanceAdapter) GetOpenOrders(pubKey, secKey, passPhrase, symbol string,
+) ([]domain.Order, error) {
 	binanceCli.UseTestnet = b.useTestnet
 	cli := binanceCli.NewClient(pubKey, secKey).NewListOpenOrdersService()
 	if symbol != "" {
@@ -135,7 +147,9 @@ func (b *BinanceAdapter) GetOpenOrders(pubKey, secKey, passPhrase, symbol string
 	return orderList, nil
 }
 
-func (b *BinanceAdapter) GetOrder(pubKey, secKey, passPhrase, symbol string, orderId int64) (*domain.Order, error) {
+func (b *BinanceAdapter) GetOrder(pubKey, secKey, passPhrase, symbol string,
+	orderId int64,
+) (*domain.Order, error) {
 	binanceCli.UseTestnet = b.useTestnet
 	result, err := binanceCli.NewClient(pubKey, secKey).
 		NewGetOrderService().
@@ -162,7 +176,8 @@ func (b *BinanceAdapter) GetOrder(pubKey, secKey, passPhrase, symbol string, ord
 	return order, nil
 }
 
-func (b *BinanceAdapter) GetSymbols(pubKey, secKey, passPhrase string) ([]string, error) {
+func (b *BinanceAdapter) GetSymbols(pubKey, secKey, passPhrase string,
+) ([]string, error) {
 	binanceCli.UseTestnet = b.useTestnet
 	result, err := binanceCli.NewClient(pubKey, secKey).
 		NewExchangeInfoService().
@@ -194,7 +209,8 @@ func (b *BinanceAdapter) getStatus(status string) string {
 	}
 }
 
-func (b *BinanceAdapter) Depth(pubKey, secKey, passPhrase, symbol string) (*domain.Depth, error) {
+func (b *BinanceAdapter) Depth(pubKey, secKey, passPhrase, symbol string,
+) (*domain.Depth, error) {
 	binanceCli.UseTestnet = b.useTestnet
 	result, err := binanceCli.
 		NewClient(pubKey, secKey).
@@ -237,7 +253,7 @@ func (b *BinanceAdapter) Depth(pubKey, secKey, passPhrase, symbol string) (*doma
 	}, nil
 }
 
-func (b *BinanceAdapter) Trades(pubKey, secKey, passPhrase, symbol string) (domain.Balance, error) {
+func (b *BinanceAdapter) Trades(pubKey, secKey, passPhrase, symbol string) (domain.Balances, error) {
 	binanceCli.UseTestnet = true
 	result, err := binanceCli.NewClient(pubKey, secKey).
 		NewGetAccountService().Do(context.Background())
@@ -245,10 +261,10 @@ func (b *BinanceAdapter) Trades(pubKey, secKey, passPhrase, symbol string) (doma
 	if err != nil {
 		return nil, err
 	}
-	var balance domain.Balance
+	var balance domain.Balances
 
 	if result.Balances == nil {
-		return nil, errors.New("empty balances")
+		return nil, nil
 	}
 	for _, v := range result.Balances {
 		balSymb := domain.NewBalanceSymbol(v.Asset, v.Free)

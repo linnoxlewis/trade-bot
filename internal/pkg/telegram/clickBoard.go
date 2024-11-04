@@ -5,6 +5,16 @@ import (
 	"github.com/linnoxlewis/trade-bot/internal/domain/consts"
 )
 
+const (
+	activeOrdersExchangeBinanceCmd = "active_orders_exchange_binance"
+	activeOrdersExchangeKucoinCmd  = "active_orders_exchange_kucoin"
+	activeOrdersExchangeOkxCmd     = "active_orders_exchange_okx"
+
+	balanceExchangeBinanceCmd = "balance_exchange_binance"
+	balanceExchangeKucoinCmd  = "balance_exchange_kucoin"
+	balanceExchangeOkxCmd     = "balance_exchange_okx"
+)
+
 type ClickBoard struct{}
 
 type ReplyKeyboardMarkup struct {

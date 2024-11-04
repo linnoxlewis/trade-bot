@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"context"
+	"github.com/linnoxlewis/trade-bot/internal/pkg/validation"
 	"github.com/linnoxlewis/trade-bot/pkg/i18n"
 	"github.com/linnoxlewis/trade-bot/pkg/log"
 	"github.com/linnoxlewis/trade-bot/pkg/telegram"
@@ -20,36 +21,58 @@ type ProcessorInterface interface {
 	Process(ctx context.Context, event Event) error
 }
 
-type Consumer struct {
+type TgBot struct {
 	fetcher   FetcherInterface
 	processor ProcessorInterface
 	logger    *log.Logger
 	batchSize int
 }
 
-func New(tg *telegram.Client,
+func NewTgBot(tg *telegram.TgClient,
+	validator validation.Validator,
 	userSrv UserSrv,
 	orderSrv OrderSrv,
 	accountSrv AccountSrv,
 	i18n *i18n.I18n,
 	admins []int,
 	logger *log.Logger,
-	batchSize int) Consumer {
-	return Consumer{
+	batchSize int) *TgBot {
+	executor := NewExecutor(tg,
+		validator,
+		userSrv,
+		orderSrv,
+		accountSrv,
+		i18n)
+
+	processor := NewProcessor(tg,
+		executor,
+		logger,
+		admins)
+
+	return &TgBot{
 		fetcher:   NewFetcher(tg),
-		processor: NewProcessor(tg, userSrv, orderSrv, accountSrv, i18n, logger, admins, 0),
+		processor: processor,
 		batchSize: batchSize,
 		logger:    logger,
 	}
 }
 
-func (c Consumer) Start(ctx context.Context) error {
-	c.logger.InfoLog.Println("start tg consumer")
+func (t *TgBot) Start(ctx context.Context) error {
+	t.logger.InfoLog.Println("start tg consumer")
 
 	for {
-		gotEvents, err := c.fetcher.Fetch(ctx, c.batchSize)
+		select {
+		case <-ctx.Done():
+			t.logger.InfoLog.Println("tg bot stopped")
+
+			return ctx.Err()
+		default:
+
+		}
+
+		gotEvents, err := t.fetcher.Fetch(ctx, t.batchSize)
 		if err != nil {
-			c.logger.ErrorLog.Printf("[ERR] consumer: %s", err.Error())
+			t.logger.ErrorLog.Printf("err fetch tg boy: %s", err.Error())
 
 			continue
 		}
@@ -60,19 +83,19 @@ func (c Consumer) Start(ctx context.Context) error {
 			continue
 		}
 
-		if err := c.handleEvents(ctx, gotEvents); err != nil {
-			c.logger.ErrorLog.Print(err)
+		if err := t.handleEvents(ctx, gotEvents); err != nil {
+			t.logger.ErrorLog.Print(err)
 			continue
 		}
 	}
 }
 
-func (c *Consumer) handleEvents(ctx context.Context, events []Event) error {
+func (t *TgBot) handleEvents(ctx context.Context, events []Event) error {
 	for _, event := range events {
-		c.logger.InfoLog.Printf("got new event: %s", event.Text)
+		t.logger.InfoLog.Printf("got new event: %s", event.Text)
 
-		if err := c.processor.Process(ctx, event); err != nil {
-			c.logger.ErrorLog.Printf("can't handle event: %s", err.Error())
+		if err := t.processor.Process(ctx, event); err != nil {
+			t.logger.ErrorLog.Printf("can't handle event: %s", err.Error())
 
 			continue
 		}

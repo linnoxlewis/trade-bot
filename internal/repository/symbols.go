@@ -19,14 +19,14 @@ func NewSymbolRepository(db *sql.DB) *SymbolRepository {
 }
 
 func (s *SymbolRepository) AddSymbol(ctx context.Context, symbol string) error {
-	query := `INSERT INTO default_symbols (symbol, created_at) VALUES ($1, $2)`
+	query := `INSERT INTO symbols (symbol, created_at) VALUES ($1, $2)`
 	_, err := s.db.ExecContext(ctx, query, symbol, time.Now())
 
 	return err
 }
 
-func (s *SymbolRepository) GetDefaultSymbols(ctx context.Context) (domain.SymbolList, error) {
-	query := `SELECT symbol FROM default_symbols`
+func (s *SymbolRepository) GetSymbols(ctx context.Context) (domain.SymbolList, error) {
+	query := `SELECT symbol FROM symbols`
 	rows, err := s.db.QueryContext(ctx, query)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

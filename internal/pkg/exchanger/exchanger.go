@@ -18,7 +18,7 @@ type Exchanger interface {
 	CreateOrder(keys *domain.ApiKeys, order *dto.Order) (int64, error)
 	CancelOrder(keys *domain.ApiKeys, order *dto.CancelOrder) error
 	UpdateOrder(keys *domain.ApiKeys, order *dto.UpdateOrder) (int64, error)
-	Balance(keys *domain.ApiKeys, exchange string) (domain.Balance, error)
+	Balance(keys *domain.ApiKeys, exchange string) (domain.Balances, error)
 	GetOpenOrders(keys *domain.ApiKeys, exchange, symbol string) ([]domain.Order, error)
 	GetOrder(keys *domain.ApiKeys, exchange, symbol string, orderId int64) (*domain.Order, error)
 	GetSymbols(keys *domain.ApiKeys, exchange string) ([]string, error)
@@ -28,7 +28,7 @@ type ExchangerCli interface {
 	CreateOrder(pubKey, secKey, passPhrase string, order *dto.Order) (int64, error)
 	CancelOrder(pubKey, secKey, passPhrase string, order *dto.CancelOrder) error
 	UpdateOrder(pubKey, secKey, passPhrase string, order *dto.UpdateOrder) (int64, error)
-	GetBalance(pubKey, secKey, passPhrase string) (domain.Balance, error)
+	GetBalance(pubKey, secKey, passPhrase string) (domain.Balances, error)
 	GetOpenOrders(pubKey, secKey, passPhrase, symbol string) ([]domain.Order, error)
 	GetOrder(pubKey, secKey, passPhrase, symbol string, orderId int64) (*domain.Order, error)
 	GetSymbols(pubKey, secKey, passPhrase string) ([]string, error)
@@ -68,7 +68,7 @@ func (e *ExchangeCli) UpdateOrder(keys *domain.ApiKeys, order *dto.UpdateOrder) 
 	return e.getType(order.Exchange).UpdateOrder(keys.PubKey, keys.PrivKey, keys.Passphrase, order)
 }
 
-func (e *ExchangeCli) Balance(keys *domain.ApiKeys, exchange string) (domain.Balance, error) {
+func (e *ExchangeCli) Balance(keys *domain.ApiKeys, exchange string) (domain.Balances, error) {
 	return e.getType(exchange).GetBalance(keys.PubKey, keys.PrivKey, keys.Passphrase)
 }
 

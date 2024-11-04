@@ -26,10 +26,6 @@ type OrderRepository struct {
 	transaction *Transaction
 }
 
-func (o *OrderRepository) Atomic(ctx context.Context, fn func(ctx context.Context, orderRepo service.OrderRepo) error) (err error) {
-	return o.transaction.Atomic(ctx, fn)
-}
-
 func NewOrderRepository(db *sql.DB) *OrderRepository {
 	return &OrderRepository{
 		db: db,
@@ -513,4 +509,8 @@ func (o *OrderRepository) GetLimitOrders(ctx context.Context, exchange string) (
 	}
 
 	return orderList, rows.Err()
+}
+
+func (o *OrderRepository) Atomic(ctx context.Context, fn func(ctx context.Context, orderRepo service.OrderRepo) error) (err error) {
+	return o.transaction.Atomic(ctx, fn)
 }

@@ -1,9 +1,9 @@
 package domain
 
 type Depth struct {
-	LastUpdateID int64        `json:"lastUpdateId"`
-	Bids         []PriceLevel `json:"bids"`
-	Asks         []PriceLevel `json:"asks"`
+	LastUpdateID int64
+	Bids         []PriceLevel
+	Asks         []PriceLevel
 }
 
 type PriceLevel struct {

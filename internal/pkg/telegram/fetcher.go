@@ -16,11 +16,11 @@ type Meta struct {
 }
 
 type Fetcher struct {
-	tg     *telegramCli.Client
+	tg     *telegramCli.TgClient
 	offset int
 }
 
-func NewFetcher(client *telegramCli.Client) *Fetcher {
+func NewFetcher(client *telegramCli.TgClient) *Fetcher {
 	return &Fetcher{
 		tg: client,
 	}

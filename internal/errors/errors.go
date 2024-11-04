@@ -1,14 +1,12 @@
 package errors
 
-var (
-	validation     = 1
-	badRequest     = 400
-	internal       = 500
-	unauthorized   = 401
-	accessDenied   = 403
-	badGateway     = 502
-	tooManyRequest = 429
-	notFound       = 404
+import (
+	"fmt"
+	"net/http"
+)
+
+const (
+	ValidationErrorCode = iota + 1
 )
 
 type Error struct {
@@ -17,14 +15,17 @@ type Error struct {
 	err  error
 }
 
-func New(code int, err string) Error {
+func New(code int, msg string) Error {
 	return Error{
 		code: code,
-		msg:  err,
+		msg:  msg,
 	}
 }
 
 func (e Error) Error() string {
+	if e.err != nil {
+		return fmt.Sprintf("%s: %v", e.msg, e.err)
+	}
 	return e.msg
 }
 
@@ -32,45 +33,48 @@ func (e Error) GetCode() int {
 	return e.code
 }
 
-func BadRequestError(err string) Error {
+func (e Error) Unwrap() error {
+	return e.err
+}
+
+func BadRequestError(msg string) Error {
 	return Error{
-		code: badRequest,
-		msg:  err,
-		err:  nil,
+		code: http.StatusBadRequest,
+		msg:  msg,
 	}
 }
 
 func WrapBadRequestError(err error) Error {
 	return Error{
-		err: err,
-		msg: err.Error(),
-	}
-}
-
-func (e Error) IsBadRequestError() bool {
-	return e.GetCode() == badRequest
-}
-
-func InternalServerError(err error) Error {
-	return Error{
-		code: internal,
-		msg:  "InternalServerError",
-		err:  err,
-	}
-}
-
-func (e Error) IsInternalServerError() bool {
-	return e.GetCode() == internal
-}
-
-func ValidationError(err error) Error {
-	return Error{
-		code: validation,
+		code: http.StatusBadRequest,
 		msg:  err.Error(),
 		err:  err,
 	}
 }
 
+func (e Error) IsBadRequestError() bool {
+	return e.GetCode() == http.StatusBadRequest
+}
+
+func InternalServerError(err error) Error {
+	return Error{
+		code: http.StatusInternalServerError,
+		err:  err,
+	}
+}
+
+func (e Error) IsInternalServerError() bool {
+	return e.GetCode() == http.StatusInternalServerError
+}
+
+func ValidationError(msg string, err error) Error {
+	return Error{
+		code: ValidationErrorCode,
+		msg:  msg,
+		err:  err,
+	}
+}
+
 func (e Error) IsValidationError() bool {
-	return e.GetCode() == validation
+	return e.GetCode() == ValidationErrorCode
 }
